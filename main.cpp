@@ -142,10 +142,7 @@ void drawGame(SDL_Renderer* renderer)
     for(int i=0; i<snakeLength; i++){
         SDL_RenderFillCircle(renderer,snake[i].x,snake[i].y,5);
     }
-    int i=rand() %3 +1;
-    if(i==1) SDL_SetRenderDrawColor(renderer,0,255,0,255);
-    else if(i==2) SDL_SetRenderDrawColor(renderer,0,0,255,255);
-    else SDL_SetRenderDrawColor(renderer,255,0,0,255);
+    SDL_SetRenderDrawColor(renderer,255,0,0,255);
     SDL_RenderFillCircle(renderer,food.x,food.y,5);
     SDL_RenderPresent(renderer);
 }
@@ -165,7 +162,7 @@ void classic(){
         if (snake[i].y >= game_y+game_h) snake[i].y = game_y + 5;
         if (snake[i].y <= game_y) snake[i].y = game_y+game_h - 5;
 
-        if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) endGame = true;
+        if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)) endGame = true;
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
 		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
@@ -176,12 +173,14 @@ void classic(){
     		food.y = (rand() % (45) + 15)*10;
 		}while (checkPoint() == false);
 	}
+	SDL_Delay(100);
+	drawGame(renderer);
 }
 
 void changeDirecton(SDL_Event e){
     bool isRunning=true;
     while(isRunning){
-        while(SDL_PollEvent(&e) != 0){
+        if(SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT) isRunning = false;
             else if(e.type == SDL_KEYDOWN){
                 switch(e.key.keysym.sym){
@@ -213,6 +212,7 @@ void changeDirecton(SDL_Event e){
                         endGame = true;
                         break;
                 }
+                isRunning=false;
             }
         }
     }
@@ -220,25 +220,15 @@ void changeDirecton(SDL_Event e){
 
 void mainLoop(void (*xxx)())
 {
-    SDL_Delay(100);
-    bool isRunning=true;
+    bool isRunning = true;
     SDL_Event e;
-    while(isRunning){
-        if(SDL_PollEvent(&e)==0){
-            SDL_SetRenderDrawColor(renderer,0,0,0,255);
-            SDL_RenderClear(renderer);
-            drawGame(renderer);
-            classic();
-        }
-        else{
+    while(!endGame && isRunning){
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        SDL_RenderClear(renderer);
+        xxx();
+        if(SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT) isRunning = false;
-            else if(e.type == SDL_KEYDOWN){
-                SDL_SetRenderDrawColor(renderer,0,0,0,255);
-                SDL_RenderClear(renderer);
-                changeDirecton(e);
-                drawGame(renderer);
-                mainLoop(xxx);
-            }
+            else if(e.type == SDL_KEYDOWN) changeDirecton(e);
         }
     }
 }
@@ -247,9 +237,7 @@ void run()
 {
     initGame();
     drawGame(renderer);
-    while(endGame==false){
-        SDL_RenderClear(renderer);
+    while(!endGame){
         mainLoop(classic);
-        drawGame(renderer);
     }
 }

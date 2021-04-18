@@ -1,15 +1,17 @@
 #include <iostream>
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <vector>
 #include <time.h>
+#include <fstream>
+#include "game_play.h"
 #include "SDL_utils.h"
-//#include "moving.h"
 
 using namespace std;
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
-const int game_h = 450, game_w = 600, game_x = 5, game_y = 145;
+const int game_h = 300, game_w = 400, game_x = 95, game_y = 245;
 const string WINDOW_TITLE = "Snake";
 
 struct Point{
@@ -22,6 +24,7 @@ struct HighScore {
     char name[30];
 };
 
+int score;
 int level;
 bool endGame;
 int snakeLength;
@@ -32,18 +35,14 @@ const int DIRECTION = 10;
 HighScore  highscore[5];
 SDL_Window* window;
 SDL_Renderer* renderer;
+SDL_Surface* windowSurface;
+SDL_Surface* imageSurface;
 SDL_Rect game;
 
-int SDL_RenderFillCircle(SDL_Renderer * renderer, int x, int y, int radius);
-
-void initGame ();
-bool checkPoint ();
-void moveSnake ();
-void drawGame (SDL_Renderer* renderer);
 void classic();
 void modern();
-void mainLoop (void (*gloop)());
-void run ();
+void mainLoop(void (*gloop)());
+void run();
 void changeDirecton (int x);
 void showHighScore();
 void getHighScore();
@@ -55,12 +54,13 @@ void showTextBackground(int x,int y,char *str,int color);
 
 int main(int argc, char *argv[])
 {
-    initSDL(window, renderer, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH);
+    initSDL(window, renderer, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH,
+            windowSurface, imageSurface);
 
     run();
 
     waitUntilKeyPressed();
-    quitSDL(window,renderer);
+    quitSDL(window,renderer,windowSurface,imageSurface);
     return 0;
 }
 
@@ -118,6 +118,8 @@ bool checkPoint (){
 
 void initGame()
 {
+    score = 0;
+    level = 1;
     snake[0].x = 320; snake[0].y = 400;
     snake[1].x = 310; snake[1].y = 400;
     snake[2].x = 300; snake[2].y = 400;
@@ -126,16 +128,20 @@ void initGame()
     direction.x = 10; direction.y = 0;
     srand(time(NULL));
     do{
-        food.x = (rand() %60 +1)*10;
-        food.y = (rand() %45 +15)*10;
+        food.x = (rand() %40 +10)*10;
+        food.y = (rand() %30 +25)*10;
     }
     while(!checkPoint());
 }
 
 void drawGame(SDL_Renderer* renderer)
 {
+    SDL_SetRenderDrawColor(renderer,0,150,0,255);
+    SDL_RenderClear(renderer);
     game.h = game_h; game.w = game_w;
     game.x = game_x; game.y = game_y;
+    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    SDL_RenderFillRect(renderer,&game);
     SDL_SetRenderDrawColor(renderer,255,0,0,255);
     SDL_RenderDrawRect(renderer,&game);
     SDL_SetRenderDrawColor(renderer,0,255,0,255);
@@ -167,53 +173,85 @@ void classic(){
     if (snake[0].x == food.x && snake[0].y == food.y){
 		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
 		snakeLength++;
+		score = score +5 +level;
 		srand ( time(NULL));
         do{
-        	food.x = (rand() % (60) + 1)*10;
-    		food.y = (rand() % (45) + 15)*10;
+        	food.x = (rand() % (40) + 10)*10;
+    		food.y = (rand() % (30) + 25)*10;
 		}while (checkPoint() == false);
 	}
 	SDL_Delay(100);
-	drawGame(renderer);
+	if(!endGame) drawGame(renderer);
+}
+
+void modern()
+{
+    for (int i=0; i<snakeLength; i++){
+        if(i==0){
+            snake[0].x0 = snake[0].x; snake[0].y0 = snake[0].y;
+            snake[0].x += direction.x;
+            snake[0].y += direction.y;
+        }else{
+            snake[i].x0 = snake[i].x; snake[i].y0 = snake[i].y;
+			snake[i].x = snake[i-1].x0; snake[i].y = snake[i-1].y0;
+        }
+        if (snake[i].x >= game_x+game_w) endGame = true;
+        if (snake[i].x <= game_x) endGame = true;
+        if (snake[i].y >= game_y+game_h) endGame = true;
+        if (snake[i].y <= game_y) endGame = true;
+
+        if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)) endGame = true;
+    }
+    if (snake[0].x == food.x && snake[0].y == food.y){
+		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
+		snakeLength++;
+		score = score +5 +level;
+		cout << score << endl;
+		srand ( time(NULL));
+        do{
+        	food.x = (rand() % (40) + 10)*10;
+    		food.y = (rand() % (30) + 25)*10;
+		}while (checkPoint() == false);
+	}
+	SDL_Delay(100);
+	if(!endGame) drawGame(renderer);
 }
 
 void changeDirecton(SDL_Event e){
     bool isRunning=true;
     while(isRunning){
-        if(SDL_PollEvent(&e) != 0){
-            if(e.type == SDL_QUIT) isRunning = false;
-            else if(e.type == SDL_KEYDOWN){
-                switch(e.key.keysym.sym){
-                    case SDLK_UP:
-                        if (direction.y != DIRECTION) {
-                            //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
-                            direction.y = -DIRECTION; direction.x = 0;
-                        }
-                        break;
-                    case SDLK_DOWN:
-                        if (direction.y != -DIRECTION) {
-                            //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
-                            direction.y = DIRECTION; direction.x = 0;
-                        }
-                        break;
-                    case SDLK_RIGHT:
-                        if (direction.x != -DIRECTION) {
-                            //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
-                            direction.x = DIRECTION; direction.y = 0;
-                        }
-                        break;
-                    case SDLK_LEFT:
-                        if (direction.x != DIRECTION) {
-                            //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
-                            direction.x = -DIRECTION; direction.y = 0;
-                        }
-                        break;
-                    case SDLK_ESCAPE:
-                        endGame = true;
-                        break;
-                }
-                isRunning=false;
+        if(e.type == SDL_QUIT) isRunning = false;
+        else if(e.type == SDL_KEYDOWN){
+            switch(e.key.keysym.sym){
+                case SDLK_UP:
+                    if (direction.y != DIRECTION) {
+                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        direction.y = -DIRECTION; direction.x = 0;
+                    }
+                    break;
+                case SDLK_DOWN:
+                    if (direction.y != -DIRECTION) {
+                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        direction.y = DIRECTION; direction.x = 0;
+                    }
+                    break;
+                case SDLK_RIGHT:
+                    if (direction.x != -DIRECTION) {
+                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        direction.x = DIRECTION; direction.y = 0;
+                    }
+                    break;
+                case SDLK_LEFT:
+                    if (direction.x != DIRECTION) {
+                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        direction.x = -DIRECTION; direction.y = 0;
+                    }
+                    break;
+                case SDLK_ESCAPE:
+                    endGame = true;
+                    break;
             }
+            isRunning=false;
         }
     }
 }
@@ -223,8 +261,6 @@ void mainLoop(void (*xxx)())
     bool isRunning = true;
     SDL_Event e;
     while(!endGame && isRunning){
-        SDL_SetRenderDrawColor(renderer,0,0,0,255);
-        SDL_RenderClear(renderer);
         xxx();
         if(SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT) isRunning = false;
@@ -233,11 +269,18 @@ void mainLoop(void (*xxx)())
     }
 }
 
+bool isEmpty()
+{
+    ifstream f("high_score.txt");
+    if(f.eof()) return true;
+    else return false;
+}
+
 void run()
 {
     initGame();
     drawGame(renderer);
     while(!endGame){
-        mainLoop(classic);
+        mainLoop(modern);
     }
 }

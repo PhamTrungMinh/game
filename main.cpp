@@ -4,7 +4,6 @@
 #include <vector>
 #include <time.h>
 #include <fstream>
-#include "game_play.h"
 #include "SDL_utils.h"
 
 using namespace std;

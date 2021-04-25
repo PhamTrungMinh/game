@@ -1,9 +1,11 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <vector>
 #include <time.h>
 #include <fstream>
+#include "game_play.h"
 #include "SDL_utils.h"
 
 using namespace std;
@@ -36,6 +38,10 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Surface* windowSurface;
 SDL_Surface* imageSurface;
+Mix_Music *bgm;
+Mix_Chunk *beep;
+Mix_Chunk *eat;
+Mix_Chunk *dead;
 SDL_Rect game;
 
 void classic();
@@ -54,12 +60,14 @@ void showTextBackground(int x,int y,char *str,int color);
 int main(int argc, char *argv[])
 {
     initSDL(window, renderer, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH,
-            windowSurface, imageSurface);
+            bgm, beep, eat, dead);
+
+    if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
 
     run();
 
     waitUntilKeyPressed();
-    quitSDL(window,renderer,windowSurface,imageSurface);
+    quitSDL(window, renderer, bgm, beep, eat, dead);
     return 0;
 }
 
@@ -170,6 +178,7 @@ void classic(){
         if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)) endGame = true;
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
+        Mix_PlayChannel(-1, eat, 0);
 		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
 		snakeLength++;
 		score = score +5 +level;

@@ -6,7 +6,7 @@
 #include <time.h>
 #include <fstream>
 #include <string>
-#include "game_play.h"
+#include <sstream>
 #include "SDL_utils.h"
 
 using namespace std;
@@ -30,7 +30,7 @@ int score;
 int level;
 bool endGame;
 int snakeLength;
-Point snake[150];
+Point snake[200];
 Point direction;
 Point food;
 int big_food;
@@ -56,8 +56,7 @@ void getHighScore();
 void checkHighScore(int score);
 void initScore();
 bool isEmpty();
-void showText(int x,int y,char *str);
-void showTextBackground(int x,int y,char *str,int color);
+void menu();
 
 int main(int argc, char *argv[])
 {
@@ -129,7 +128,7 @@ void initGame()
 {
     big_food = 0;
     score = 0;
-    level = 1;
+    level = 5;
     snake[0].x = 320; snake[0].y = 400;
     snake[1].x = 310; snake[1].y = 400;
     snake[2].x = 300; snake[2].y = 400;
@@ -183,7 +182,10 @@ void classic(){
         if (snake[i].y >= game_y+game_h) snake[i].y = game_y + 5;
         if (snake[i].y <= game_y) snake[i].y = game_y+game_h - 5;
 
-        if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)) endGame = true;
+        if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)){
+            endGame = true;
+            Mix_PlayChannel(-1,dead,0);
+        }
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
         Mix_PlayChannel(-1, eat, 0);
@@ -203,7 +205,7 @@ void classic(){
     		food.y = (rand() % (30) + 25)*10;
 		}while (checkPoint() == false);
 	}
-	SDL_Delay(100);
+	SDL_Delay(140 - 15*level);
 	if(!endGame) drawGame(renderer);
 }
 
@@ -223,7 +225,10 @@ void modern()
         if (snake[i].y >= game_y+game_h) endGame = true;
         if (snake[i].y <= game_y) endGame = true;
 
-        if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)) endGame = true;
+        if (i!=0 && (snake[0].x == snake[i].x && snake[0].y == snake[i].y)){
+            endGame = true;
+            Mix_PlayChannel(-1,dead,0);
+        }
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
 		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
@@ -243,7 +248,7 @@ void modern()
     		food.y = (rand() % (30) + 25)*10;
 		}while (checkPoint() == false);
 	}
-	SDL_Delay(100);
+	SDL_Delay(150-20*level);
 	if(!endGame) drawGame(renderer);
 }
 
@@ -316,20 +321,52 @@ void initScore()
     }else{
         int count=0;
         string s;
-        ifstream f("highscore.txt");
+        ifstream f("high_score.txt");
         for(int i=0; i<5; i++){
             if(!f.eof()){
                 getline(f,s);
             }else break;
         }
+        f.close();
+    }
+}
+
+void getHighScore()
+{
+    ofstream f("high_score.txt");
+    for(int i=0; i<5; i++){
+        stringstream ss;
+        ss << highscore[i].score;
+        string str = highscore[i].name;
+        str = str + " " + ss.str();
+        f <<  str;
     }
     //show highscore
+    f.close();
+}
+
+void checkHighScore(int score)
+{
+    for(int i=0; i<5; i++){
+        if(highscore[i].score < score){
+            for(int j=4; j>i; j--){
+                highscore[j] = highscore[j-1];
+            }
+            highscore[i].score = score;
+            string s;
+            cin >> s;
+            highscore[i].name = s;
+        }
+    }
 }
 
 void run()
 {
+    //menu
+
     while(true){
         initGame();
+        initScore();
         drawGame(renderer);
         while(!endGame){
             mainLoop(modern);

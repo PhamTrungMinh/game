@@ -8,7 +8,7 @@
 void logSDLError(ostream& os, const string &msg, bool fatal)
 {
     os << msg << " Error: " << SDL_GetError() << endl;
-    if (fatal) {
+    if (fatal){
         SDL_Quit();
         exit(1);
     }
@@ -36,7 +36,7 @@ void initSDL(SDL_Window* &window, SDL_Renderer* &renderer, const string WINDOW_T
         cout << "Error 1" << endl;
 
     if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
-        cout << "Error 2" <<endl;
+        cout << "Error 2" << endl;
 
     bgm = Mix_LoadMUS("bgm.mp3");
     beep = Mix_LoadWAV("beep.wav");
@@ -44,6 +44,8 @@ void initSDL(SDL_Window* &window, SDL_Renderer* &renderer, const string WINDOW_T
     dead = Mix_LoadWAV("endGame.wav");
     if(bgm==NULL || beep==NULL || eat==NULL || dead==NULL)
         cout << "Error 3" << endl;
+
+    font = TTF_OpenFont("Roboto-Black.ttf",16);
 }
 
 void quitSDL(SDL_Window* window, SDL_Renderer* renderer, TTF_Font *font,
@@ -57,6 +59,8 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer, TTF_Font *font,
 	Mix_FreeChunk(eat);
 	Mix_FreeChunk(dead);
 	Mix_FreeMusic(bgm);
+	TTF_CloseFont(font);
+	font = NULL;
 	bgm = NULL;
 	beep = NULL;
 	dead = NULL;

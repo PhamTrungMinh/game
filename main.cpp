@@ -2,12 +2,12 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-#include <vector>
 #include <time.h>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include "SDL_utils.h"
+#include "menu.h"
 
 using namespace std;
 
@@ -39,6 +39,7 @@ HighScore  highscore[5];
 SDL_Rect snake_head;
 SDL_Window* window;
 SDL_Renderer* renderer;
+SDL_Renderer* textRenderer;
 TTF_Font *font;
 Mix_Music *bgm;
 Mix_Chunk *beep;
@@ -63,7 +64,9 @@ int main(int argc, char *argv[])
     initSDL(window, renderer, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH,
             font, bgm, beep, eat, dead);
 
-    if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
+    /*renderText("SNAKE",450,0,100,20,font,textRenderer);
+    SDL_RenderPresent(textRenderer);
+    SDL_Delay(10000);*/
 
     run();
 
@@ -231,7 +234,8 @@ void modern()
         }
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
-		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
+        Mix_PlayChannel(-1, eat, 0);
+		snake[snakeLength].x = snake[snakeLength-1].x0; snake[snakeLength].y = snake[snakeLength-1].y0;
 		snakeLength++;
 		if(big_food==5){
             score = score +(5+level)*2;
@@ -260,25 +264,25 @@ void changeDirecton(SDL_Event e){
             switch(e.key.keysym.sym){
                 case SDLK_UP:
                     if (direction.y != DIRECTION) {
-                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        Mix_PlayChannel(-1,beep,0);
                         direction.y = -DIRECTION; direction.x = 0;
                     }
                     break;
                 case SDLK_DOWN:
                     if (direction.y != -DIRECTION) {
-                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        Mix_PlayChannel(-1,beep,0);
                         direction.y = DIRECTION; direction.x = 0;
                     }
                     break;
                 case SDLK_RIGHT:
                     if (direction.x != -DIRECTION) {
-                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        Mix_PlayChannel(-1,beep,0);
                         direction.x = DIRECTION; direction.y = 0;
                     }
                     break;
                 case SDLK_LEFT:
                     if (direction.x != DIRECTION) {
-                        //PlaySound(TEXT("beep.wav"), NULL, SND_ASYNC);
+                        Mix_PlayChannel(-1,beep,0);
                         direction.x = -DIRECTION; direction.y = 0;
                     }
                     break;
@@ -362,14 +366,14 @@ void checkHighScore(int score)
 
 void run()
 {
-    //menu
+    if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
 
     while(true){
         initGame();
         initScore();
         drawGame(renderer);
         while(!endGame){
-            mainLoop(modern);
+            mainLoop(classic);
         }
         int c;
         cout << "Again?" << endl;

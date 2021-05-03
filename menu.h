@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <SDL.h>
+#include <SDL_ttf.h>
+#include "SDL_utils.h"
 
 using namespace std;
 
@@ -26,3 +28,4 @@ class LButton
         LButtonSprite mCurrentSprite;
 };
 
+void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_Renderer* textRenderer);

@@ -1,3 +1,6 @@
+#ifndef _MENU_H
+#define _MENU_H
+
 #include <iostream>
 #include <string>
 #include <SDL.h>
@@ -29,3 +32,6 @@ class LButton
 };
 
 void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_Renderer* textRenderer);
+
+
+#endif // _MENU_H

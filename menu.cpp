@@ -30,7 +30,7 @@ void LButton::handleEvent(SDL_Event* e)
     }
 }
 
-void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_Renderer* textRenderer)
+void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_Renderer* &textRenderer)
 {
     SDL_Color color = {0, 0, 255, 255};
 
@@ -45,5 +45,3 @@ void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_
     Message_rect.h = h;
     SDL_RenderCopy(textRenderer, Message, NULL, &Message_rect);
 }
-
-

@@ -9,6 +9,9 @@
 
 using namespace std;
 
+static SDL_Color white = {255, 255, 255, 255};
+static SDL_Color blue = {0, 0, 200, 255};
+
 enum LButtonSprite
 {
     BUTTON_SPRITE_MOUSE_OUT = 0,
@@ -31,7 +34,9 @@ class LButton
         LButtonSprite mCurrentSprite;
 };
 
-void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_Renderer* textRenderer);
+void renderText(const string s, int x, int y, TTF_Font* &font, SDL_Color color,
+        SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
 
+void menu(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
 
 #endif // _MENU_H

@@ -30,18 +30,36 @@ void LButton::handleEvent(SDL_Event* e)
     }
 }
 
-void renderText(const char* ch, int x, int y, int w, int h, TTF_Font* font, SDL_Renderer* &textRenderer)
+void renderText(const string s, int x, int y, TTF_Font* &font, SDL_Color color,
+        SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture)
 {
-    SDL_Color color = {0, 0, 255, 255};
+    surface = TTF_RenderText_Solid(font, s.c_str(), color);
 
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(font, ch, color);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-    SDL_Texture* Message = SDL_CreateTextureFromSurface(textRenderer, surfaceMessage);
+    SDL_Rect Message_rect, srcRest;
+    TTF_SizeText(font,s.c_str(),&srcRest.w,&srcRest.h);
 
-    SDL_Rect Message_rect;
+    srcRest.x = 0;
+    srcRest.y = 0;
+
     Message_rect.x = x;
     Message_rect.y = y;
-    Message_rect.w = w;
-    Message_rect.h = h;
-    SDL_RenderCopy(textRenderer, Message, NULL, &Message_rect);
+    Message_rect.w = srcRest.w;
+    Message_rect.h = srcRest.h;
+
+    SDL_RenderFillRect(renderer,&Message_rect);
+    SDL_RenderCopy(renderer, texture, NULL, &Message_rect);
+    SDL_RenderPresent(renderer);
+}
+
+void menu(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture)
+{
+    SDL_SetRenderDrawColor(renderer,0,200,0,255);
+    SDL_RenderClear(renderer);
+    renderText("SNAKE",350,0,font, blue, renderer,surface,texture);
+    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    renderText("START",350,200,font, white, renderer,surface,texture);
+    renderText("HIGHSCORE",320,300,font, white, renderer,surface,texture);
+    renderText("QUIT",365,400,font, white, renderer,surface,texture);
 }

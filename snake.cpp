@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include "SDL_utils.h"
+#include "menu.h"
 
 using namespace std;
 
@@ -39,6 +40,8 @@ HighScore  highscore[5];
 SDL_Rect snake_head;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
+SDL_Surface* surface = NULL;
+SDL_Texture* texture = NULL;
 TTF_Font *font = NULL;
 Mix_Music *bgm = NULL;
 Mix_Chunk *beep = NULL;
@@ -60,17 +63,17 @@ void menu();
 
 int main(int argc, char *argv[])
 {
-    initSDL(window, renderer, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH,
+    initSDL(window, renderer, surface, texture, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH,
             font, bgm, beep, eat, dead);
 
-    if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
+    //if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
 
+    menu(font, renderer, surface, texture);
 
-
-    run();
+    //run();
 
     waitUntilKeyPressed();
-    quitSDL(window, renderer, font, bgm, beep, eat, dead);
+    quitSDL(window, renderer, font, surface, texture, bgm, beep, eat, dead);
     return 0;
 }
 

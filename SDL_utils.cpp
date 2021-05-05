@@ -14,8 +14,8 @@ void logSDLError(ostream& os, const string &msg, bool fatal)
     }
 }
 
-void initSDL(SDL_Window* &window, SDL_Renderer* &renderer, const string WINDOW_TITLE,
-             const int SCREEN_HEIGHT, const int SCREEN_WIDTH, TTF_Font* &font,
+void initSDL(SDL_Window* &window, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture,
+             const string WINDOW_TITLE, const int SCREEN_HEIGHT, const int SCREEN_WIDTH, TTF_Font* &font,
              Mix_Music* &bgm, Mix_Chunk* &beep, Mix_Chunk* &eat, Mix_Chunk* &dead)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -45,16 +45,24 @@ void initSDL(SDL_Window* &window, SDL_Renderer* &renderer, const string WINDOW_T
     if(bgm==NULL || beep==NULL || eat==NULL || dead==NULL)
         cout << "Error 3" << endl;
 
-    font = TTF_OpenFont("Roboto-Black.ttf",16);
+    if(TTF_Init() < 0) cout << "Error 4" << endl;
+
+    font = TTF_OpenFont("Roboto-Black.ttf",30);
+    if(!font) cout << "Error 5" << endl;
 }
 
 void quitSDL(SDL_Window* window, SDL_Renderer* renderer, TTF_Font *font,
+             SDL_Surface* &surface, SDL_Texture* &texture,
              Mix_Music *bgm, Mix_Chunk *beep, Mix_Chunk *eat, Mix_Chunk *dead)
 {
 	SDL_DestroyRenderer(renderer);
 	renderer = NULL;
 	SDL_DestroyWindow(window);
 	window = NULL;
+	SDL_DestroyTexture(texture);
+	texture = NULL;
+	SDL_FreeSurface(surface);
+	surface = NULL;
 	Mix_FreeChunk(beep);
 	Mix_FreeChunk(eat);
 	Mix_FreeChunk(dead);
@@ -65,6 +73,7 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer, TTF_Font *font,
 	beep = NULL;
 	dead = NULL;
 	eat = NULL;
+	TTF_Quit();
 	Mix_Quit();
 	SDL_Quit();
 }

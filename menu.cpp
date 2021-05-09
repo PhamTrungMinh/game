@@ -20,15 +20,33 @@ void LButton::setPosition(int x, int y)
     mPos.y = y;
 }
 
-void LButton::handleEvent(SDL_Event* e)
+/*void LButton::handleEvent(SDL_Event* e)
 {
     if(e->type == SDL_MOUSEBUTTONDOWN)
     {
         int x, y;
         SDL_GetMouseState(&x, &y);
+
         bool inside = true;
+
+        //Mouse is left of the button
+        if( x < mPos.x ){
+            inside = false;
+        }
+        //Mouse is right of the button
+        else if( x > mPosition.x + BUTTON_WIDTH ){
+            inside = false;
+        }
+        //Mouse above the button
+        else if( y < mPosition.y ){
+            inside = false;
+        }
+        //Mouse below the button
+        else if( y > mPosition.y + BUTTON_HEIGHT ){
+            inside = false;
+        }
     }
-}
+}*/
 
 void renderText(const string s, int x, int y, TTF_Font* &font, SDL_Color color,
         SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture)
@@ -57,9 +75,13 @@ void menu(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_T
 {
     SDL_SetRenderDrawColor(renderer,0,200,0,255);
     SDL_RenderClear(renderer);
-    renderText("SNAKE",350,0,font, blue, renderer,surface,texture);
+    font = TTF_OpenFont("Roboto-Black.ttf",50);
+    renderText("SNAKE",320,50,font, blue, renderer,surface,texture);
     SDL_SetRenderDrawColor(renderer,0,0,0,255);
-    renderText("START",350,200,font, white, renderer,surface,texture);
-    renderText("HIGHSCORE",320,300,font, white, renderer,surface,texture);
+    font = TTF_OpenFont("Roboto-Black.ttf",30);
+    renderText("START",350,250,font, white, renderer,surface,texture);
+    renderText("HOW TO PLAY",300,300,font,white,renderer,surface,texture);
+    renderText("HIGHSCORE",320,350,font, white, renderer,surface,texture);
     renderText("QUIT",365,400,font, white, renderer,surface,texture);
 }
+

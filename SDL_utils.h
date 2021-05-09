@@ -15,3 +15,4 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer, TTF_Font *font,
              SDL_Surface* &surface, SDL_Texture* &texture,
              Mix_Music *bgm, Mix_Chunk *beep, Mix_Chunk *eat, Mix_Chunk *dead);
 void waitUntilKeyPressed();
+

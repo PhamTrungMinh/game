@@ -68,9 +68,9 @@ int main(int argc, char *argv[])
 
     //if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
 
-    menu(font, renderer, surface, texture);
+    //menu(font, renderer, surface, texture);
 
-    //run();
+    run();
 
     waitUntilKeyPressed();
     quitSDL(window, renderer, font, surface, texture, bgm, beep, eat, dead);
@@ -131,6 +131,8 @@ bool checkPoint (){
 
 void initGame()
 {
+    game.h = game_h; game.w = game_w;
+    game.x = game_x; game.y = game_y;
     big_food = 0;
     score = 0;
     level = 5;
@@ -146,14 +148,25 @@ void initGame()
         food.y = (rand() %30 +25)*10;
     }
     while(!checkPoint());
+
+    SDL_SetRenderDrawColor(renderer,0,150,0,255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer,0,150,0,255);
+    font = TTF_OpenFont("Roboto-Black.ttf",50);
+    renderText("SNAKE",320,50,font, blue, renderer,surface,texture);
+
+    string s="SCORE: ";
+    stringstream ss;
+    ss << score;
+    s += ss.str();
+    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    font = TTF_OpenFont("Roboto-Black.ttf",30);
+    renderText(s,500,200,font,white,renderer,surface,texture);
 }
 
 void drawGame(SDL_Renderer* renderer)
 {
-    SDL_SetRenderDrawColor(renderer,0,150,0,255);
-    SDL_RenderClear(renderer);
-    game.h = game_h; game.w = game_w;
-    game.x = game_x; game.y = game_y;
     SDL_SetRenderDrawColor(renderer,0,0,0,255);
     SDL_RenderFillRect(renderer,&game);
     SDL_SetRenderDrawColor(renderer,255,0,0,255);
@@ -194,6 +207,7 @@ void classic(){
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
         Mix_PlayChannel(-1, eat, 0);
+
 		snake[snakeLength].x = snake[snakeLength-1].x0; snake[snakeLength].y = snake[snakeLength-1].y0;
 		snakeLength++;
 		if(big_food==5){
@@ -204,6 +218,14 @@ void classic(){
             score = score +5 +level;
             big_food++;
 		}
+
+        string s="SCORE: ";
+        stringstream ss;
+        ss << score;
+        s += ss.str();
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        renderText(s,500,200,font,white,renderer,surface,texture);
+
 		srand ( time(NULL));
         do{
         	food.x = (rand() % (40) + 10)*10;
@@ -236,6 +258,8 @@ void modern()
         }
     }
     if (snake[0].x == food.x && snake[0].y == food.y){
+        Mix_PlayChannel(-1, eat, 0);
+
 		snake[snakeLength].x = snake[snakeLength-1].x0;snake[snakeLength].y = snake[snakeLength-1].y0;
 		snakeLength++;
 		if(big_food==5){
@@ -246,7 +270,14 @@ void modern()
             score = score +5 +level;
             big_food++;
 		}
-		cout << score << endl;
+
+		        string s="SCORE: ";
+        stringstream ss;
+        ss << score;
+        s += ss.str();
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        renderText(s,500,200,font,white,renderer,surface,texture);
+
 		srand ( time(NULL));
         do{
         	food.x = (rand() % (40) + 10)*10;

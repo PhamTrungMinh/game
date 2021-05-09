@@ -40,3 +40,4 @@ void renderText(const string s, int x, int y, TTF_Font* &font, SDL_Color color,
 void menu(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
 
 #endif // _MENU_H
+

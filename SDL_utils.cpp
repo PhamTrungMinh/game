@@ -46,9 +46,6 @@ void initSDL(SDL_Window* &window, SDL_Renderer* &renderer, SDL_Surface* &surface
         cout << "Error 3" << endl;
 
     if(TTF_Init() < 0) cout << "Error 4" << endl;
-
-    font = TTF_OpenFont("Roboto-Black.ttf",30);
-    if(!font) cout << "Error 5" << endl;
 }
 
 void quitSDL(SDL_Window* window, SDL_Renderer* renderer, TTF_Font *font,
@@ -88,3 +85,4 @@ void waitUntilKeyPressed()
         SDL_Delay(50);
     }
 }
+

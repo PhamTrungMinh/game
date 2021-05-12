@@ -12,32 +12,22 @@ using namespace std;
 static SDL_Color white = {255, 255, 255, 255};
 static SDL_Color blue = {0, 0, 200, 255};
 
-enum LButtonSprite
-{
-    BUTTON_SPRITE_MOUSE_OUT = 0,
-    BUTTON_SPRITE_MOUSE_OVER_MOTION = 1,
-    BUTTON_SPRITE_MOUSE_DOWN = 2,
-    BUTTON_SPRITE_MOUSE_UP = 3,
-    BUTTON_SPRITE_TOTAL = 4
-};
-
-class LButton
-{
-    public:
-        LButton();
-        void setPosition(int x, int y);
-        void handleEvent(SDL_Event* e);
-        void render();
-
-    private:
-        SDL_Point mPos;
-        LButtonSprite mCurrentSprite;
-};
-
 void renderText(const string s, int x, int y, TTF_Font* &font, SDL_Color color,
         SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
 
-void menu(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
+void menu(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface,
+          SDL_Texture* &texture);
+
+void choose_mode(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture,
+                 int& mode, bool& co1);
+
+void choose_level(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture,
+                  int &level, int& mode, bool& co1, bool& co2);
+
+void how_to_play(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
+
+void show_highscore(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture);
+
+void show_info(TTF_Font* &font, SDL_Renderer* &renderer, SDL_Surface* &surface, SDL_Texture* &texture, int& level, int& mode);
 
 #endif // _MENU_H
-

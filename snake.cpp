@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include "SDL_utils.h"
 #include "menu.h"
 
@@ -22,21 +23,10 @@ struct Point{
     int x0,y0;
 };
 
-struct HighScore {
-    int score;
-    string name;
-};
-
-int score;
-int level;
+int score, level, mode, snakeLength, big_food, highscore[5];
 bool endGame;
-int snakeLength;
-Point snake[200];
-Point direction;
-Point food;
-int big_food;
+Point direction, food, snake[200];
 const int DIRECTION = 10;
-HighScore  highscore[5];
 SDL_Rect snake_head;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
@@ -52,27 +42,22 @@ SDL_Rect game;
 void classic();
 void modern();
 void mainLoop(void (*gloop)());
-void run();
+void play(bool& co1, bool& co2);
 void changeDirecton (int x);
 void showHighScore();
 void getHighScore();
-void checkHighScore(int score);
+void checkHighScore();
 void initScore();
 bool isEmpty();
-void menu();
+void run();
 
 int main(int argc, char *argv[])
 {
     initSDL(window, renderer, surface, texture, WINDOW_TITLE, SCREEN_HEIGHT, SCREEN_WIDTH,
             font, bgm, beep, eat, dead);
 
-    //if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
-
-    //menu(font, renderer, surface, texture);
-
     run();
 
-    waitUntilKeyPressed();
     quitSDL(window, renderer, font, surface, texture, bgm, beep, eat, dead);
     return 0;
 }
@@ -135,7 +120,6 @@ void initGame()
     game.x = game_x; game.y = game_y;
     big_food = 0;
     score = 0;
-    level = 5;
     snake[0].x = 320; snake[0].y = 400;
     snake[1].x = 310; snake[1].y = 400;
     snake[2].x = 300; snake[2].y = 400;
@@ -151,18 +135,36 @@ void initGame()
 
     SDL_SetRenderDrawColor(renderer,0,150,0,255);
     SDL_RenderClear(renderer);
-
-    SDL_SetRenderDrawColor(renderer,0,150,0,255);
     font = TTF_OpenFont("Roboto-Black.ttf",50);
-    renderText("SNAKE",320,50,font, blue, renderer,surface,texture);
+    renderText("SNAKE",330,50,font, blue, renderer,surface,texture);
 
-    string s="SCORE: ";
+    string s = "SCORE: ";
     stringstream ss;
     ss << score;
     s += ss.str();
     SDL_SetRenderDrawColor(renderer,0,0,0,255);
     font = TTF_OpenFont("Roboto-Black.ttf",30);
-    renderText(s,500,200,font,white,renderer,surface,texture);
+    renderText(s,350,180,font,white,renderer,surface,texture);
+
+    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    font = TTF_OpenFont("Roboto-Black.ttf",30);
+    renderText("HIGHSCORE:",550,180,font,white,renderer,surface,texture);
+    renderText("NO 1.",550,250,font,white,renderer,surface,texture);
+    renderText("NO 2.",550,300,font,white,renderer,surface,texture);
+    renderText("NO 3.",550,350,font,white,renderer,surface,texture);
+    renderText("NO 4.",550,400,font,white,renderer,surface,texture);
+    renderText("NO 5.",550,450,font,white,renderer,surface,texture);
+
+    string sub;
+    int i=0, n = 250;
+    ifstream f("high_score.txt");
+    while(!f.eof() && i<5){
+        getline(f,sub);
+        renderText(sub,650,n,font,white,renderer,surface,texture);
+        n+=50; i++;
+    }
+
+    show_info(font,renderer,surface,texture,level,mode);
 }
 
 void drawGame(SDL_Renderer* renderer)
@@ -224,7 +226,7 @@ void classic(){
         ss << score;
         s += ss.str();
         SDL_SetRenderDrawColor(renderer,0,0,0,255);
-        renderText(s,500,200,font,white,renderer,surface,texture);
+        renderText(s,350,180,font,white,renderer,surface,texture);
 
 		srand ( time(NULL));
         do{
@@ -232,7 +234,7 @@ void classic(){
     		food.y = (rand() % (30) + 25)*10;
 		}while (checkPoint() == false);
 	}
-	SDL_Delay(140 - 15*level);
+	SDL_Delay(140 - 18*level);
 	if(!endGame) drawGame(renderer);
 }
 
@@ -271,12 +273,12 @@ void modern()
             big_food++;
 		}
 
-		        string s="SCORE: ";
+        string s="SCORE: ";
         stringstream ss;
         ss << score;
         s += ss.str();
         SDL_SetRenderDrawColor(renderer,0,0,0,255);
-        renderText(s,500,200,font,white,renderer,surface,texture);
+        renderText(s,350,180,font,white,renderer,surface,texture);
 
 		srand ( time(NULL));
         do{
@@ -284,7 +286,7 @@ void modern()
     		food.y = (rand() % (30) + 25)*10;
 		}while (checkPoint() == false);
 	}
-	SDL_Delay(150-20*level);
+	SDL_Delay(140-18*level);
 	if(!endGame) drawGame(renderer);
 }
 
@@ -340,74 +342,125 @@ void mainLoop(void (*xxx)())
     }
 }
 
-bool isEmpty()
-{
-    ifstream f("high_score.txt");
-    if(f.eof()) return true;
-    else return false;
-}
-
 void initScore()
 {
-    if(isEmpty()){
-        for(int i=0; i<5; i++){
-            highscore[i].name = "PLAYER";
-            highscore[i].score = 0;
-        }
-    }else{
-        int count=0;
-        string s;
-        ifstream f("high_score.txt");
-        for(int i=0; i<5; i++){
-            if(!f.eof()){
-                getline(f,s);
-            }else break;
-        }
-        f.close();
+    ifstream f("high_score.txt");
+    int i=0;
+    while(!f.eof() && i<5){
+        f >> highscore[i];
+        i++;
     }
+    f.close();
 }
 
 void getHighScore()
 {
     ofstream f("high_score.txt");
     for(int i=0; i<5; i++){
-        stringstream ss;
-        ss << highscore[i].score;
-        string str = highscore[i].name;
-        str = str + " " + ss.str();
-        f <<  str;
+        f << highscore[i] << endl;
     }
-    //show highscore
     f.close();
 }
 
-void checkHighScore(int score)
+void checkHighScore()
 {
     for(int i=0; i<5; i++){
-        if(highscore[i].score < score){
-            for(int j=4; j>i; j--){
-                highscore[j] = highscore[j-1];
+        if(highscore[i] < score){
+            highscore[4] = score;
+            break;
+        }
+    }
+    sort(highscore,highscore+5,greater<int>());
+}
+
+void play(bool& co1, bool& co2)
+{
+    bool play = true;
+    while(play){
+        initGame();
+        initScore();
+        drawGame(renderer);
+        if(mode==1)
+            while(!endGame) mainLoop(classic);
+        else
+            while(!endGame) mainLoop(modern);
+
+        checkHighScore();
+        getHighScore();
+
+        font = TTF_OpenFont("Roboto-Black.ttf",50);
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        renderText("Ga` Ga` Ga`",200,250,font,white,renderer,surface,texture);
+        renderText("Again?",200,300,font,white,renderer,surface,texture);
+        renderText("1.YES",200,350,font,white,renderer,surface,texture);
+        renderText("2.NO",200,400,font,white,renderer,surface,texture);
+
+        SDL_Event e;
+        bool co = true;
+        while(co){
+            if(SDL_PollEvent(&e) != 0){
+                if(e.type == SDL_KEYDOWN){
+                    switch(e.key.keysym.sym){
+                        case SDLK_1:
+                            co = false;
+                            break;
+                        case SDLK_2:
+                            co = false;
+                            play = false;
+                            co2 = false;
+                            co1 = false;
+                            break;
+                    }
+                }
             }
-            highscore[i].score = score;
-            string s;
-            cin >> s;
-            highscore[i].name = s;
         }
     }
 }
 
 void run()
 {
-    //menu
+    bool run = true;
+    while(run){
+        if(!Mix_PlayingMusic()) Mix_PlayMusic(bgm,-1);
 
-    while(true){
-        initGame();
-        //initScore();
-        drawGame(renderer);
-        while(!endGame) mainLoop(classic);
-        int c;
-        cout << "Again?" << endl;
-        cin >> c;
-        if(!c) break;
+        menu(font, renderer, surface, texture);
+        SDL_Event e;
+        bool co = true;
+        while(co){
+            if(SDL_PollEvent(&e) != 0){
+                if(e.type == SDL_KEYDOWN){
+                    switch(e.key.keysym.sym){
+                        case SDLK_1:
+                        {
+                            bool co1 = true;
+                            choose_mode(font,renderer,surface,texture,mode,co1);
+                            while(co1){
+                                bool co2 = true;
+                                choose_level(font,renderer,surface,texture,level,mode,co1,co2);
+                                while(co2){
+                                    Mix_HaltMusic();
+                                    play(co1,co2);
+                                }
+                            }
+                            co = false;
+                            break;
+                        }
+                        case SDLK_2:
+                            how_to_play(font,renderer,surface,texture);
+                            break;
+                        case SDLK_3:
+                            show_highscore(font,renderer,surface,texture);
+                            break;
+                        case SDLK_4:
+                            co = false;
+                            run = false;
+                            break;
+                        case SDLK_ESCAPE:
+                            co = false;
+                            break;
+                    }
+                }
+            }
+        }
     }
 }
